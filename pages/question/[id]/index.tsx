@@ -3,23 +3,28 @@ import Router, { useRouter } from "next/router";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 
 let config = {
-    headers: {
-        "Content-Type": "application/json",
-        'Access-Control-Allow-Origin': '*',
-        "Access-Control-Allow-Headers":  "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, access-control-allow-headers",
-        "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PUT, PATCH, DELETE"
-      }
-    }
+    // headers: {
+    //     "Content-Type": "application/json",
+    //     'Access-Control-Allow-Origin': '*',
+    //     "Access-Control-Allow-Headers":  "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, access-control-allow-origin, access-control-allow-headers",
+    //     "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PUT, PATCH, DELETE"
+    // }
+}
 
 export default function Question() {
     const router = useRouter()
     const id = router.query.id
+
+    // From question, on initial load
     const [question, setQuestion] = useState<any>({});
     const [tableRows, setTableRow] = useState<any>([{"loading": 1}])
     
+    // Query text & outcome
     const [queryContent, setQueryContent] = useState<string>("SELECT *");
-    const [queryTableRows, setQueryTableRows] = useState<any>([{"loading":1}]);
-    const [result, setResult] = useState<any>({
+    const [queryResult, setQueryResult] = useState<string>("Result here");
+    
+    // Submission result for each test case
+    const [submitResult, setSubmitResult] = useState<any>({
         'is_correct': undefined,
         'testcases': {}
     });
@@ -65,7 +70,8 @@ export default function Question() {
         }, config)
         .then(response => {
             if (typeof response.data.data !== null) {
-                setQueryTableRows(response.data.data)
+                console.log("res:", response.data.data)
+                setQueryResult(response.data.data)
             }
         })
         .catch(err => {
@@ -82,7 +88,9 @@ export default function Question() {
         .then(response => {
             if (typeof response.data !== null) {
                 console.log(response.data)
-                setResult(response.data)
+                
+                // Submission result for each test case
+                setSubmitResult(response.data)
             }
         })
         .catch(err => {
@@ -127,33 +135,20 @@ export default function Question() {
             <button onClick={handleQuerySubmit}>Submit</button>
 
             <h3>Submission Result:</h3>
-            <p>{result?.is_correct ? "CORRECT" : "FALSE or not submitted"}</p>
-            <p>{result.testcases ? "(will not run all, only test cases until error)" : <></>}</p>
+            <p>{submitResult?.is_correct ? "CORRECT" : "FALSE or not submitted"}</p>
+            <p>{submitResult.testcases ? "(will not run all, only test cases until error)" : <></>}</p>
             <ul>
-                {Object.keys(result.testcases).map((item: any, idx: number) => (
-                    <li key={idx}>Testcase {item}: {result.testcases[item] ? "✅" : "💔"}</li>
+                {Object.keys(submitResult.testcases).map((item: any, idx: number) => (
+                    <li key={idx}>Testcase {item}: {submitResult.testcases[item] ? "✅" : "💔"}</li>
                 ))}
             </ul>
 
             <h3>Test Output:</h3>
-            <table>
-                <tbody>
-                    <tr>
-                        {Object.keys(tableRows?.length > 0 ? tableRows[0] : {"loading...": 1}).map((item:any, idx:number) => (
-                            <th key={idx}>{item}</th>
-                        ))}
-                    </tr>
-                    {queryTableRows.map((row: any, idx:number) => (
-                        <tr key={idx}>
-                            {Object.keys(row).map((field, idxx) => (
-                                <td key={idxx}>{row[field]}</td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <span style={{"whiteSpace": "pre-line"}}>
+                {queryResult}
+            </span>
             <button onClick={e => setQueryContent("")}>clear query</button>
-            <button onClick={e => setQueryTableRows([])}>clear output</button>
+            <button onClick={e => setQueryResult([])}>clear output</button>
 
         </main>
     );
