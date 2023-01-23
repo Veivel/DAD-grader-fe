@@ -1,6 +1,6 @@
 import axios from "axios";
 import Router, { useRouter } from "next/router";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { BaseSyntheticEvent, DragEvent, useEffect, useState } from "react";
 import { QUESTION_TYPE, SUBMIT_RESPONSE_TYPE } from "../../components/types/types";
 
 let config = {}
@@ -93,11 +93,11 @@ export function QuestionPage() {
         })
     }
 
-    function preventDragHandler(e: DragEvent) {
+    function preventDragHandler(e: DragEvent | any) {
         e.preventDefault();
       }
 
-    function handleDrag(e: DragEvent) {
+    function handleDrag(e: DragEvent<HTMLDivElement>) {
         if (window.visualViewport && e
         .clientX > 50 && e.clientX < window.visualViewport.width - 250) {
             setBorderX(e.clientX);
